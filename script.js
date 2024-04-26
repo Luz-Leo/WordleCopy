@@ -4,9 +4,9 @@ let guessedWords = [];
 let seconds = 0;
 let minutes = 0;
 let intervalId;
-let playTimer = true;
 let guessWord = "";
 let p = 0;
+let gameOver = false
 
 const possibleWords = ["apple", "xerox", "games", "board", "mouse", "purge"]
 const guessButton = document.getElementById("guessButton");
@@ -14,16 +14,13 @@ const guessInput = document.getElementById("userInput");
 const form = document.getElementById("inputForm");
 const timer = document.getElementById("timer");
 
-
-
 // Randomly choose the word which the users needs to guess
 const getRandWord = () => {
     let randomNumber = Math.floor(Math.random() * possibleWords.length);
-    return possibleWords[5];
+    return possibleWords[randomNumber];
 }
 
 const displayResult = () => {
-
     guessInputArray = guessWord.toLowerCase().split("");
 
     for (let i = 0; i < guessInputArray.length; i++) {
@@ -31,47 +28,46 @@ const displayResult = () => {
             // let result = document.getElementById(`try${numberTry}-p${i}`)
             const inputField = document.querySelectorAll(`#try${numberTry}`)
             if (guessInputArray[i] == selectedWordArray[j] && i === j) {
-                console.log(inputField[i])
                 inputField[i].classList.add('right');
                 inputField[i].classList.remove('almost');
-                console.log(`Guessed letter:${guessInputArray[i]} position: ${i} || selected letter ${selectedWordArray[j]} position ${j}`)
 
             } else if (guessInputArray[i] === selectedWordArray[j] && i !== j && inputField[i].classList.length === 1) {
                 inputField[i].classList.add('almost');
             }
         }
     }
-
+    isGameOver();
+    if(gameOver){stopTimer()}
     numberTry++;
-    // if (numberTry === 5) {
-    //     guessButton.disabled = true;
-    //     guessInput.disabled = true;
-    //     stopTimer();
-    // } else if ((guessedWords[numberTry - 1] == selectedWord)) {
-    //     guessButton.disabled = true;
-    //     guessInput.disabled = true
-    //     console.log("You guessed");
-    //     stopTimer();
-    // }
-    // form.reset();
+}
+
+const isGameOver = () => {
+    if(guessWord === selectedWord.toUpperCase()){
+        console.log('You won')
+        gameOver = true;
+    }else if(numberTry === 4){
+        console.log("You lose!")
+        gameOver = true;
+    }
 }
 
 const input = (e) => {
     e.preventDefault();
+    if(gameOver){
+        return;
+    }
     const inputField = document.querySelectorAll(`#try${numberTry}`)
     let regex = /^[A-Za-z]+$/.test(e.key);
     
     if(regex && e.key.length === 1 && p < 5){
     inputField[p].innerText = e.key
     p++
-    } 
-    
-    if(e.key === "Backspace" && p !== 0){
+    }else if(e.key === "Backspace" && p !== 0){
         p--;
         inputField[p].innerText = '';
         
-    }
-    if(e.key === "Enter"){
+    }else if(e.key === "Enter" && p == 5){
+        console.log("P: " + p)
         guessWord = "";
         inputField.forEach((word)=>guessWord += word.innerText)
         isValid();
@@ -81,17 +77,16 @@ const input = (e) => {
 const isValid = () => {
     if (guessWord.length !== 5) {
         console.log("Word is more or less than 5 caracters");
-        return false;
+
     }
     if (guessedWords.find((word) => word === guessWord)) {
         console.log("Word repeated");
-        return false;
-    } else {
+
+    }else {
         console.log("New word");
         guessedWords.push(guessWord);
         p=0;
         displayResult();
-        return true;
     }
 }
 
@@ -122,5 +117,6 @@ const updateTime = () => {
 selectedWord = getRandWord().toLowerCase();
 const selectedWordArray = selectedWord.split("")
 startTimer(); // Start the timer on page load
-// guessButton.addEventListener('click', displayResult)
-document.addEventListener("keydown", input)
+// while(playTimer){
+    document.addEventListener("keydown", input)
+// }
